@@ -1,2 +1,7 @@
-/* empty for now */
 body { font-family: Arial; }
+.login-screen { display:flex; justify-content:center; padding:60px; }
+.login-card { width:320px; padding:20px; background:#102030; border-radius:10px; color:white; }
+.field { margin-top:12px; display:flex; flex-direction:column; }
+.field input { padding:8px; border-radius:6px; }
+.row { margin-top:12px; }
+.login-logo { width:80px; height:80px; border-radius:8px; margin:auto; display:block; }
