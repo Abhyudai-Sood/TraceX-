@@ -30,8 +30,40 @@
 </div>
 
 <div id="dashboard" style="display:none;">
-  <h1>Dashboard Loaded!</h1>
-  <button onclick="logout()">Logout</button>
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="brand">
+      <img id="topLogo" src="logo.png" alt="logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22%3E%3Crect fill=%22%233b82f6%22 width=%2248%22 height=%2248%22 rx=%228%22/%3E%3Ctext x=%2224%22 y=%2232%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2224%22 font-weight=%22bold%22%3ETX%3C/text%3E%3C/svg%3E'">
+      <div class="brand-text">
+        <div class="app-title">TraceX</div>
+        <div class="app-sub">Secure System Call Interface</div>
+      </div>
+    </div>
+    <div class="session-area">
+      <div class="user-block">
+        <span class="username" id="sessionUser">Not logged in</span>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dashboard Grid -->
+  <div class="dashboard-grid">
+    <aside class="panel sidebar">
+      <h3>Operations</h3>
+      <p>System call buttons will go here</p>
+    </aside>
+
+    <section class="panel mainpanel">
+      <h2>System Activity</h2>
+      <p>Charts will go here</p>
+    </section>
+
+    <aside class="panel rightpanel">
+      <h3>Activity Feed</h3>
+      <p>Logs will appear here</p>
+    </aside>
+  </div>
 </div>
 
 <script src="tracex_script.js"></script>

@@ -15,7 +15,7 @@ function login() {
     session = { user: u, role: USERS[u].role };
     document.getElementById("loginScreen").style.display = "none";
     document.getElementById("dashboard").style.display = "block";
-    alert("Welcome " + u + "!");
+    document.getElementById("sessionUser").textContent = u + " (" + session.role + ")";
   } else {
     alert("Invalid credentials");
   }
