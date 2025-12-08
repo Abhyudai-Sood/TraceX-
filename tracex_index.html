@@ -56,6 +56,14 @@
     <button class="op-btn" onclick="openFileModal('write')">✍️ Write File</button>
     <button class="op-btn" onclick="openFileModal('delete')">🗑️ Delete File</button>
   </div>
+  <hr style="border:none;border-top:1px solid rgba(255,255,255,0.05);margin:12px 0">
+<button class="op-btn" onclick="openProcModal('create')">⚙️ Create Process</button>
+<button class="op-btn" onclick="openProcModal('kill')">❌ Kill Process</button>
+
+<div style="margin-top:12px">
+  <strong>Process Manager</strong>
+  <div class="small" id="procList">--</div>
+</div>
   
   <div style="margin-top:12px">
     <strong>Virtual File System</strong>
@@ -69,9 +77,9 @@
     </section>
 
     <aside class="panel rightpanel">
-      <h3>Activity Feed</h3>
-      <p>Logs will appear here</p>
-    </aside>
+  <div class="panel-title">Running Processes</div>
+  <div class="feed" id="procTableArea"></div>
+</aside>
   </div>
 </div>
 
@@ -91,6 +99,34 @@
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('fileModal')">Cancel</button>
       <button class="btn-primary" onclick="executeFileAction()">Execute</button>
+    </div>
+  </div>
+</div>
+
+<!-- Process Modal -->
+<div id="procModal" class="modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="procModalTitle">Process Operation</h3>
+      <button class="btn-ghost" onclick="closeModal('procModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="procCreateFields">
+        <label class="small">Process name</label>
+        <input id="procNameInput" class="txt-full" placeholder="my_process">
+        <label class="small" style="margin-top:8px">Runtime (seconds)</label>
+        <input id="procRuntimeInput" class="txt-full" placeholder="8">
+      </div>
+      <div id="procKillFields" style="display:none">
+        <label class="small">Select PID to kill</label>
+        <select id="procSelect" class="select-dark">
+          <option value="">-- choose PID --</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('procModal')">Cancel</button>
+      <button class="btn-primary" onclick="executeProcAction()">Execute</button>
     </div>
   </div>
 </div>

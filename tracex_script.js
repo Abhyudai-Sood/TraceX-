@@ -89,3 +89,93 @@ function login() {
     alert("Invalid credentials");
   }
 }
+// Process Management
+let procs = [{ pid: 1001, name: "init", runtime: 0, mem: 32 }];
+let nextPid = 2000;
+let currentProcMode = "create";
+
+function openProcModal(mode) {
+  if (!session) { alert("Login first"); return; }
+  currentProcMode = mode;
+  document.getElementById("procModalTitle").textContent = 
+    mode === "create" ? "Create Process" : "Kill Process";
+  document.getElementById("procCreateFields").style.display = mode === "create" ? "block" : "none";
+  document.getElementById("procKillFields").style.display = mode === "kill" ? "block" : "none";
+  
+  if (mode === "kill") {
+    const sel = document.getElementById("procSelect");
+    sel.innerHTML = '<option value="">-- choose PID --</option>';
+    procs.forEach(p => {
+      if (p.name !== "init") {
+        const o = document.createElement("option");
+        o.value = p.pid;
+        o.textContent = p.pid + ":" + p.name;
+        sel.appendChild(o);
+      }
+    });
+  }
+  
+  document.getElementById("procModal").style.display = "flex";
+}
+
+function executeProcAction() {
+  if (currentProcMode === "create") {
+    const name = document.getElementById("procNameInput").value.trim() || "proc";
+    const runtime = parseInt(document.getElementById("procRuntimeInput").value || "8", 10);
+    const pid = nextPid++;
+    const mem = 16 + Math.floor(Math.random() * 48);
+    procs.push({ pid, name, runtime, mem });
+    alert("Process created: PID " + pid);
+  } else {
+    const pidVal = document.getElementById("procSelect").value;
+    if (!pidVal) { alert("Select a process"); return; }
+    const pid = parseInt(pidVal, 10);
+    procs = procs.filter(p => p.pid !== pid);
+    alert("Process killed: PID " + pid);
+  }
+  
+  renderProcs();
+  closeModal("procModal");
+}
+
+function renderProcs() {
+  const list = document.getElementById("procList");
+  list.textContent = procs.length ? procs.map(p => p.pid + ":" + p.name).join(", ") : "--";
+  
+  const area = document.getElementById("procTableArea");
+  area.innerHTML = "";
+  
+  const table = document.createElement("table");
+  table.className = "table";
+  table.innerHTML = "<thead><tr><th>PID</th><th>Name</th><th>Runtime</th><th>Mem</th><th>Action</th></tr></thead>";
+  const tb = document.createElement("tbody");
+  procs.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${p.pid}</td><td>${p.name}</td><td>${p.runtime}s</td><td>${p.mem}MB</td><td><button class="killBtn" onclick="killProcDirect(${p.pid})">Kill</button></td>`;
+    tb.appendChild(tr);
+  });
+  table.appendChild(tb);
+  area.appendChild(table);
+}
+
+function killProcDirect(pid) {
+  procs = procs.filter(p => p.pid !== pid);
+  renderProcs();
+}
+
+// Update login to render processes
+function login() {
+  const u = document.getElementById("userInput").value.trim();
+  const p = document.getElementById("passInput").value;
+  
+  if (USERS[u] && USERS[u].pwd === p) {
+    session = { user: u, role: USERS[u].role };
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+    document.getElementById("sessionUser").textContent = u + " (" + session.role + ")";
+    updateVfsUI();
+    renderProcs();
+  } else {
+    alert("Invalid credentials");
+  }
+}
