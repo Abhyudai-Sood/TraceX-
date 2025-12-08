@@ -8,23 +8,30 @@
 
 <div id="loginScreen" class="login-screen">
   <div class="login-card">
-    <img src="logo.png" class="login-logo">
+    <img src="logo.png" class="login-logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2290%22 height=%2290%22%3E%3Ccircle fill=%22%233b82f6%22 cx=%2245%22 cy=%2245%22 r=%2245%22/%3E%3Ctext x=%2245%22 y=%2260%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2236%22 font-weight=%22bold%22%3ETX%3C/text%3E%3C/svg%3E'">
     <h2>Sign In</h2>
 
     <div class="field">
       <label>Username</label>
-      <input id="userInput">
+      <input id="userInput" value="admin">
     </div>
 
     <div class="field">
       <label>Password</label>
-      <input id="passInput" type="password">
+      <input id="passInput" type="password" value="admin123">
     </div>
 
     <div class="row">
-      <button onclick="login()">Login</button>
+      <button class="btn-primary" onclick="login()">Login</button>
     </div>
+    
+    <p class="small">Demo: <b>admin/admin123</b>, <b>user1/user123</b>, <b>guest/guest123</b></p>
   </div>
+</div>
+
+<div id="dashboard" style="display:none;">
+  <h1>Dashboard Loaded!</h1>
+  <button onclick="logout()">Logout</button>
 </div>
 
 <script src="tracex_script.js"></script>
