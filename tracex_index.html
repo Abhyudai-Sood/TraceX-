@@ -50,9 +50,18 @@
   <!-- Dashboard Grid -->
   <div class="dashboard-grid">
     <aside class="panel sidebar">
-      <h3>Operations</h3>
-      <p>System call buttons will go here</p>
-    </aside>
+  <div class="panel-title">Operations</div>
+  <div class="ops">
+    <button class="op-btn" onclick="openFileModal('read')">📖 Read File</button>
+    <button class="op-btn" onclick="openFileModal('write')">✍️ Write File</button>
+    <button class="op-btn" onclick="openFileModal('delete')">🗑️ Delete File</button>
+  </div>
+  
+  <div style="margin-top:12px">
+    <strong>Virtual File System</strong>
+    <div class="small" id="vfsList">--</div>
+  </div>
+</aside>
 
     <section class="panel mainpanel">
       <h2>System Activity</h2>
@@ -63,6 +72,26 @@
       <h3>Activity Feed</h3>
       <p>Logs will appear here</p>
     </aside>
+  </div>
+</div>
+
+<!-- File Modal -->
+<div id="fileModal" class="modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="fileModalTitle">File Operation</h3>
+      <button class="btn-ghost" onclick="closeModal('fileModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="small">Filename</label>
+      <input id="fileNameInput" class="txt-full" placeholder="notes.txt">
+      <label class="small" style="margin-top:8px">Content</label>
+      <textarea id="fileContent" class="txt-full" rows="5"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('fileModal')">Cancel</button>
+      <button class="btn-primary" onclick="executeFileAction()">Execute</button>
+    </div>
   </div>
 </div>
 

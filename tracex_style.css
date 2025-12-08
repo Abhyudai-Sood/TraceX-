@@ -25,3 +25,20 @@ body { margin:0; background:#071226; color:#e6f0fb; font-family:Arial; }
 /* Dashboard Grid Layout */
 .dashboard-grid { display:grid; grid-template-columns:320px 1fr 380px; gap:20px; padding:24px 32px; }
 .panel { background:linear-gradient(180deg,#0d1c2b,#0b1622); padding:18px; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.02); }
+/* Panel Title Styling */
+.panel-title { font-weight:700; margin-bottom:14px; font-size:14px; color:#f59e0b; text-transform:uppercase; border-bottom:2px solid rgba(245,158,11,0.2); padding-bottom:8px; }
+
+/* Operation Buttons */
+.ops .op-btn { display:block; width:100%; text-align:left; padding:12px 14px; border-radius:10px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.02); margin-bottom:8px; color:inherit; cursor:pointer; font-size:14px; transition:all 0.2s ease; }
+.ops .op-btn:hover { background:rgba(59,130,246,0.1); border-color:rgba(59,130,246,0.3); transform:translateX(4px); }
+
+/* Modal Styling */
+.modal { position:fixed; left:0; top:0; width:100%; height:100%; display:none; justify-content:center; align-items:center; background:rgba(0,0,0,0.6); z-index:1200; }
+.modal .modal-box { width:520px; background:linear-gradient(180deg,#0d1c2b,#0b1622); padding:20px; border-radius:12px; border:1px solid rgba(255,255,255,0.03); box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+.modal .modal-header { display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.05); }
+.modal .modal-header h3 { margin:0; font-size:18px; }
+.modal .modal-body { margin-top:16px; }
+.modal .modal-footer { margin-top:20px; display:flex; justify-content:flex-end; gap:8px; }
+.txt-full { width:100%; padding:10px 12px; border-radius:8px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); color:inherit; font-size:14px; }
+.btn-ghost { background:transparent; border:1px solid rgba(255,255,255,0.06); color:inherit; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:600; transition:all 0.2s ease; }
+.btn-ghost:hover { background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.1); }
