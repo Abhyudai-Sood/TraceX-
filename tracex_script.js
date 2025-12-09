@@ -187,21 +187,14 @@ let timelineChart = null;
 let pieChart = null;
 let barChart = null;
 
-function logEvent(action, status) {
-  const timestamp = new Date();
-  logs.push({ 
-    ts: timestamp.getTime(), 
-    action, 
-    status, 
-    user: session.user,
-    time: timestamp.toLocaleTimeString()
-  });
-  stats.total++;
-  if (status === "allowed") stats.allowed++;
-  else stats.denied++;
+function logEvent(e) {
+  e.ts = Date.now();
+  logs.push(e);
+  runRules();
+  saveState();
   renderStats();
+  renderFeed();
   renderCharts();
-  renderActivityFeed();
 }
 
 function renderActivityFeed() {
@@ -228,19 +221,19 @@ function renderActivityFeed() {
     feed.appendChild(item);
   });
 }
-// Add to LocalStorage Keys (at top with other keys)
 const MEM_EXTRA_KEY = "tracex_mem_extra_v1";
-
-// Add to Global State (with other global variables)
+const ALERT_KEY = "tracex_alerts_v1";
 let extraMem = 0;
-
-// Update loadState function (add extraMem loading)
+let alerts = [];
+//loadState function
 function loadState() {
   try { logs = JSON.parse(localStorage.getItem(LOG_KEY) || "[]"); } catch { logs = []; }
   try { vfs = JSON.parse(localStorage.getItem(VFS_KEY) || "{}"); } catch { vfs = {}; }
   try { procs = JSON.parse(localStorage.getItem(PROC_KEY) || "[]"); } catch { procs = []; }
   try { extraMem = parseInt(localStorage.getItem(MEM_EXTRA_KEY) || "0", 10); } catch { extraMem = 0; }
+  try { alerts = JSON.parse(localStorage.getItem(ALERT_KEY) || "[]"); } catch { alerts = []; }
 
+  // Initialize default data
   if (!Object.keys(vfs).length) {
     vfs = { "/home/readme.txt": "Welcome to TraceX demo system." };
   }
@@ -256,6 +249,7 @@ function saveState() {
   localStorage.setItem(VFS_KEY, JSON.stringify(vfs));
   localStorage.setItem(PROC_KEY, JSON.stringify(procs));
   localStorage.setItem(MEM_EXTRA_KEY, String(extraMem));
+  localStorage.setItem(ALERT_KEY, JSON.stringify(alerts));
 }
 
 // ===== MEMORY MANAGEMENT ===== (Add this entire section)
@@ -318,7 +312,61 @@ function renderMemory() {
   document.getElementById("memInput").value = used ? `${used} MB` : "";
 }
 
+function runRules() {
+  const L = logs.length;
+  
+  // Rule 1: Three consecutive denials
+  if (L >= 3) {
+    const last3 = logs.slice(-3);
+    if (last3.every(x => x.decision === "denied" && x.user === last3[0].user)) {
+      pushAlert("high", "three_denied", `${last3[0].user}: 3 denied operations`);
+    }
+  }
+  
+  // Rule 2: Burst detection
+  if (L >= 6) {
+    const slice6 = logs.slice(-6);
+    const dt = slice6[5].ts - slice6[0].ts;
+    if (dt < 4000) {
+      pushAlert("high", "burst", `High syscall burst: ${slice6.length} calls in ${Math.round(dt / 1000)}s`);
+    }
+    
+    // Rule 3: Repetitive actions
+    const acts = slice6.map(e => e.action);
+    if (acts.every(a => a === acts[0])) {
+      pushAlert("medium", "repeat", `Repetitive syscall: ${acts[0]}`);
+    }
+  }
+  
+  // Rule 4: High denial ratio
+  const recent = logs.slice(-20);
+  if (recent.length >= 5) {
+    const den = recent.filter(e => e.decision === "denied").length;
+    if (den / recent.length >= 0.6) {
+      pushAlert("high", "deny_ratio", `High deny ratio: ${den}/${recent.length}`);
+    }
+  }
+}
 
+function pushAlert(sev, rule, msg) {
+  const now = Date.now();
+  if (alerts.length && alerts[0].rule === rule && (now - alerts[0].ts) < 4000) return;
+  alerts.unshift({ sev, rule, msg, ts: now });
+  if (alerts.length > 6) alerts.pop();
+  saveState();
+  renderAlerts();
+}
+
+function renderAlerts() {
+  const box = document.getElementById("alerts");
+  box.innerHTML = "";
+  alerts.forEach(a => {
+    const div = document.createElement("div");
+    div.className = a.sev === "high" ? "alert-red" : "alert-yellow";
+    div.innerHTML = `<strong>${a.msg}</strong><span class="small" style="float:right">${new Date(a.ts).toLocaleTimeString()}</span>`;
+    box.appendChild(div);
+  });
+}
 
 function formatAction(action) {
   const actionMap = {
@@ -492,7 +540,8 @@ function login() {
     renderStats();
     renderFeed();
     renderCharts();
-    renderMemory();  // ADD THIS LINE
+    renderMemory();
+    renderAlerts();  // ADD THIS LINE
   } else {
     alert("Invalid username or password");
   }
