@@ -6,7 +6,7 @@ const USERS = {
 };
 
 let session = null;
-
+let autoTimer = null;
 function login() {
   const u = document.getElementById("userInput").value.trim();
   const p = document.getElementById("passInput").value;
@@ -22,9 +22,12 @@ function login() {
 }
 
 function logout() {
+  if (!confirm("Logout?")) return;
   session = null;
-  document.getElementById("loginScreen").style.display = "flex";
+  stopAuto();  // ADD THIS LINE
   document.getElementById("dashboard").style.display = "none";
+  document.getElementById("loginScreen").style.display = "flex";
+  document.getElementById("sessionUser").textContent = "Not logged in";
 }
 
 // Virtual File System
@@ -68,6 +71,91 @@ function executeFileAction() {
 function updateVfsUI() {
   const keys = Object.keys(vfs);
   document.getElementById("vfsList").textContent = keys.length ? keys.join(", ") : "--";
+}
+
+// ===== AUTO SIMULATION =====
+function toggleAuto() {
+  if (autoTimer) { stopAuto(); return; }
+  autoTimer = setInterval(simulateStep, 1200);
+  document.getElementById("autoBtn").textContent = "⏸ Auto";
+}
+
+function stopAuto() {
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  document.getElementById("autoBtn").textContent = "▶ Auto";
+}
+
+function simulateStep() {
+  const uNames = Object.keys(USERS);
+  const uname = uNames[Math.floor(Math.random() * uNames.length)];
+  const role = USERS[uname].role;
+  const action = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
+  const prev = session;
+  session = { user: uname, role };
+  
+  if (action.startsWith("file")) {
+    const keys = Object.keys(vfs);
+    let target = keys.length ? keys[Math.floor(Math.random() * keys.length)] : "auto.txt";
+    if (action === "file_write") vfs[target] = vfs[target] || "(auto)";
+    if (action === "file_delete" && !vfs[target]) { session = prev; return; }
+    logEvent({ user: uname, role, action, target, decision: "allowed" });
+  } else if (action === "process_create") {
+    const pid = nextPid++;
+    const memAlloc = 16 + Math.floor(Math.random() * 32);
+    procs.push({ pid, name: "auto_proc", runtime: 6, mem: memAlloc });
+    logEvent({ user: uname, role, action: "process_create", target: "auto_proc", decision: "allowed" });
+  } else if (action === "process_kill") {
+    const candidates = procs.filter(p => p.name !== "init");
+    if (!candidates.length) { session = prev; return; }
+    const p = candidates[Math.floor(Math.random() * candidates.length)];
+    procs = procs.filter(x => x.pid !== p.pid);
+    logEvent({ user: uname, role, action: "process_kill", target: `${p.pid}:${p.name}`, decision: "allowed" });
+  } else if (action === "memory_alloc") {
+    extraMem += 8;
+    logEvent({ user: uname, role, action: "memory_alloc", target: "auto_buffer", detail: "8MB", decision: "allowed" });
+  }
+  
+  session = prev;
+  saveState();
+  updateVfsUI();
+  renderProcs();
+  renderMemory();
+}
+
+function tickProcesses() {
+  let changed = false;
+  const now = Date.now();
+  
+  for (let p of procs) {
+    if (p.name === "init") continue;
+    if (p.runtime > 0) {
+      p.runtime--;
+      changed = true;
+    }
+  }
+  
+  const exiting = procs.filter(p => p.runtime === 0 && p.name !== "init");
+  if (exiting.length) {
+    exiting.forEach(p => {
+      logs.push({ 
+        user: "kernel", 
+        role: "system", 
+        action: "process_exit", 
+        target: `${p.pid}:${p.name}`, 
+        decision: "allowed", 
+        ts: now 
+      });
+    });
+    procs = procs.filter(p => !(p.runtime === 0 && p.name !== "init"));
+    changed = true;
+  }
+  
+  if (changed) {
+    saveState();
+    renderProcs();
+    renderFeed();
+    renderCharts();
+  }
 }
 
 function closeModal(id) {
@@ -535,13 +623,18 @@ function login() {
     document.getElementById("dashboard").style.display = "block";
     document.getElementById("sessionUser").textContent = `${u} (${session.role})`;
     document.getElementById("roleDisplay").textContent = session.role;
-    updateVfsUI();
-    renderProcs();
-    renderStats();
-    renderFeed();
-    renderCharts();
-    renderMemory();
-    renderAlerts();  // ADD THIS LINE
+    // ===== INITIALIZATION =====
+loadState();
+updateVfsUI();
+renderProcs();
+renderStats();
+renderFeed();
+renderCharts();
+renderMemory();
+renderAlerts();
+setInterval(tickProcesses, 1000);  // ADD THIS LINE
+document.getElementById("loginScreen").style.display = "flex";
+document.getElementById("dashboard").style.display = "none";
   } else {
     alert("Invalid username or password");
   }
