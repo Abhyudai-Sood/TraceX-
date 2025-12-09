@@ -60,3 +60,13 @@ body { margin:0; background:#071226; color:#e6f0fb; font-family:Arial; }
 .small-chart-row { display:flex; gap:12px; margin-top:12px; }
 .chart-card.small { height:200px; flex:1; padding:16px; }
 .chart-title { color:#f59e0b; font-weight:600; margin-bottom:8px; font-size:14px; }
+/* Activity Feed */
+.activity-item { padding:10px; border-radius:8px; margin-bottom:8px; background:rgba(255,255,255,0.02); border-left:3px solid #3b82f6; font-size:13px; transition:all 0.2s ease; }
+.activity-item:hover { background:rgba(59,130,246,0.05); transform:translateX(4px); }
+.activity-item.denied { border-left-color:#ef4444; }
+.activity-item.allowed { border-left-color:#10b981; }
+.activity-meta { color:#9fb3d1; font-size:11px; margin-top:4px; display:flex; justify-content:space-between; }
+.activity-action { font-weight:600; color:#e6f0fb; }
+.status-tag { padding:2px 8px; border-radius:4px; font-weight:600; font-size:10px; text-transform:uppercase; }
+.status-tag.allowed { background:rgba(16,185,129,0.2); color:#10b981; }
+.status-tag.denied { background:rgba(239,68,68,0.2); color:#ef4444; }

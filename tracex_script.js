@@ -188,12 +188,58 @@ let pieChart = null;
 let barChart = null;
 
 function logEvent(action, status) {
-  logs.push({ ts: Date.now(), action, status, user: session.user });
+  const timestamp = new Date();
+  logs.push({ 
+    ts: timestamp.getTime(), 
+    action, 
+    status, 
+    user: session.user,
+    time: timestamp.toLocaleTimeString()
+  });
   stats.total++;
   if (status === "allowed") stats.allowed++;
   else stats.denied++;
   renderStats();
   renderCharts();
+  renderActivityFeed();
+}
+
+function renderActivityFeed() {
+  const feed = document.getElementById("activityFeed");
+  feed.innerHTML = "";
+  
+  const recentLogs = logs.slice(-10).reverse();
+  
+  if (recentLogs.length === 0) {
+    feed.innerHTML = '<div class="small" style="text-align:center;padding:20px;color:#9fb3d1">No activity yet</div>';
+    return;
+  }
+  
+  recentLogs.forEach(log => {
+    const item = document.createElement("div");
+    item.className = `activity-item ${log.status}`;
+    item.innerHTML = `
+      <div class="activity-action">${formatAction(log.action)}</div>
+      <div class="activity-meta">
+        <span>👤 ${log.user} • ${log.time}</span>
+        <span class="status-tag ${log.status}">${log.status}</span>
+      </div>
+    `;
+    feed.appendChild(item);
+  });
+}
+
+function formatAction(action) {
+  const actionMap = {
+    "read_file": "📖 Read File",
+    "write_file": "✍️ Write File",
+    "delete_file": "🗑️ Delete File",
+    "create_process": "⚙️ Create Process",
+    "kill_process": "❌ Kill Process",
+    "network_request": "🌐 Network Request",
+    "memory_alloc": "💾 Memory Allocation"
+  };
+  return actionMap[action] || action;
 }
 
 function renderStats() {
@@ -339,7 +385,7 @@ function executeProcAction() {
   closeModal("procModal");
 }
 
-// Update login to initialize charts
+// Login to initialize charts
 function login() {
   const u = document.getElementById("userInput").value.trim();
   const p = document.getElementById("passInput").value;
@@ -353,6 +399,7 @@ function login() {
     renderProcs();
     renderStats();
     renderCharts();
+    renderActivityFeed();
   } else {
     alert("Invalid credentials");
   }
