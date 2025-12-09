@@ -179,3 +179,181 @@ function login() {
     alert("Invalid credentials");
   }
 }
+
+// Logging and Charts
+let logs = [];
+let stats = { total: 0, allowed: 0, denied: 0 };
+let timelineChart = null;
+let pieChart = null;
+let barChart = null;
+
+function logEvent(action, status) {
+  logs.push({ ts: Date.now(), action, status, user: session.user });
+  stats.total++;
+  if (status === "allowed") stats.allowed++;
+  else stats.denied++;
+  renderStats();
+  renderCharts();
+}
+
+function renderStats() {
+  document.getElementById("totalBadge").textContent = "Total: " + stats.total;
+  document.getElementById("allowedBadge").textContent = "Allowed: " + stats.allowed;
+  document.getElementById("deniedBadge").textContent = "Denied: " + stats.denied;
+}
+
+function renderCharts() {
+  const tCanvas = document.getElementById("timeline").getContext("2d");
+  const pCanvas = document.getElementById("pie").getContext("2d");
+  const bCanvas = document.getElementById("bar").getContext("2d");
+
+  // Timeline Chart
+  if (timelineChart) timelineChart.destroy();
+  timelineChart = new Chart(tCanvas, {
+    type: "line",
+    data: {
+      labels: logs.slice(-20).map(() => ""),
+      datasets: [{
+        data: logs.slice(-20).map(l => l.status === "allowed" ? 1 : 0),
+        borderColor: "#3b82f6",
+        backgroundColor: "rgba(59,130,246,0.15)",
+        fill: true,
+        tension: 0.25
+      }]
+    },
+    options: { 
+      animation: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { min: 0, max: 1 } }
+    }
+  });
+
+  // Pie Chart
+  if (pieChart) pieChart.destroy();
+  pieChart = new Chart(pCanvas, {
+    type: "doughnut",
+    data: {
+      labels: ["Allowed", "Denied"],
+      datasets: [{ 
+        data: [stats.allowed || 1, stats.denied || 1], 
+        backgroundColor: ["#10b981", "#ef4444"] 
+      }]
+    },
+    options: { 
+      animation: { animateRotate: false },
+      plugins: { legend: { position: "bottom", labels: { color: "#9fb3d1" } } }
+    }
+  });
+
+  // Bar Chart
+  if (barChart) barChart.destroy();
+  const actionCounts = {};
+  logs.forEach(l => actionCounts[l.action] = (actionCounts[l.action] || 0) + 1);
+  const sortedActions = Object.entries(actionCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  
+  barChart = new Chart(bCanvas, {
+    type: "bar",
+    data: {
+      labels: sortedActions.map(a => a[0]),
+      datasets: [{ 
+        data: sortedActions.map(a => a[1]), 
+        backgroundColor: "#f59e0b" 
+      }]
+    },
+    options: { 
+      animation: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+}
+
+// Update file operations to log events
+function executeFileAction() {
+  const filename = document.getElementById("fileNameInput").value.trim();
+  if (!filename) { alert("Enter filename"); return; }
+  
+  const status = session.role === "admin" || session.role === "user" ? "allowed" : "denied";
+  
+  if (status === "denied") {
+    alert("Access denied for " + session.role);
+    logEvent(currentFileMode + "_file", "denied");
+    closeModal("fileModal");
+    return;
+  }
+  
+  if (currentFileMode === "write") {
+    vfs[filename] = document.getElementById("fileContent").value || "(empty)";
+    alert("File written: " + filename);
+    logEvent("write_file", "allowed");
+  } else if (currentFileMode === "read") {
+    if (vfs[filename]) {
+      alert("File: " + filename + "\n\n" + vfs[filename]);
+      logEvent("read_file", "allowed");
+    } else {
+      alert("File not found");
+    }
+  } else if (currentFileMode === "delete") {
+    if (vfs[filename]) {
+      delete vfs[filename];
+      alert("File deleted");
+      logEvent("delete_file", "allowed");
+    } else {
+      alert("File not found");
+    }
+  }
+  
+  updateVfsUI();
+  closeModal("fileModal");
+}
+
+// Update process operations to log events
+function executeProcAction() {
+  const status = session.role === "admin" ? "allowed" : "denied";
+  
+  if (status === "denied") {
+    alert("Only admin can manage processes");
+    logEvent(currentProcMode + "_process", "denied");
+    closeModal("procModal");
+    return;
+  }
+  
+  if (currentProcMode === "create") {
+    const name = document.getElementById("procNameInput").value.trim() || "proc";
+    const runtime = parseInt(document.getElementById("procRuntimeInput").value || "8", 10);
+    const pid = nextPid++;
+    const mem = 16 + Math.floor(Math.random() * 48);
+    procs.push({ pid, name, runtime, mem });
+    alert("Process created: PID " + pid);
+    logEvent("create_process", "allowed");
+  } else {
+    const pidVal = document.getElementById("procSelect").value;
+    if (!pidVal) { alert("Select a process"); return; }
+    const pid = parseInt(pidVal, 10);
+    procs = procs.filter(p => p.pid !== pid);
+    alert("Process killed: PID " + pid);
+    logEvent("kill_process", "allowed");
+  }
+  
+  renderProcs();
+  closeModal("procModal");
+}
+
+// Update login to initialize charts
+function login() {
+  const u = document.getElementById("userInput").value.trim();
+  const p = document.getElementById("passInput").value;
+  
+  if (USERS[u] && USERS[u].pwd === p) {
+    session = { user: u, role: USERS[u].role };
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+    document.getElementById("sessionUser").textContent = u + " (" + session.role + ")";
+    updateVfsUI();
+    renderProcs();
+    renderStats();
+    renderCharts();
+  } else {
+    alert("Invalid credentials");
+  }
+}

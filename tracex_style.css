@@ -51,3 +51,12 @@ body { margin:0; background:#071226; color:#e6f0fb; font-family:Arial; }
 .killBtn { background:#ef4444; border:none; color:white; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; transition:all 0.2s ease; }
 .killBtn:hover { background:#dc2626; transform:scale(1.05); }
 .select-dark { width:100%; padding:10px 12px; border-radius:8px; background:#0b1724; border:1px solid rgba(255,255,255,0.05); color:#e6f0fb; font-size:14px; }
+/* Badges */
+.badge { padding:8px 14px; border-radius:999px; background:rgba(255,255,255,0.02); font-weight:600; color:#9fb3d1; font-size:13px; margin-left:8px; }
+.badge:first-child { margin-left:0; }
+
+/* Charts */
+.chart-card { height:280px; border-radius:8px; padding:16px; margin-top:12px; background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01)); }
+.small-chart-row { display:flex; gap:12px; margin-top:12px; }
+.chart-card.small { height:200px; flex:1; padding:16px; }
+.chart-title { color:#f59e0b; font-weight:600; margin-bottom:8px; font-size:14px; }

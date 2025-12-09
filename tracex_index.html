@@ -3,6 +3,7 @@
 <head>
   <title>TraceX — Login</title>
   <link rel="stylesheet" href="tracex_style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -72,9 +73,33 @@
 </aside>
 
     <section class="panel mainpanel">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <div class="small">Dashboard</div>
       <h2>System Activity</h2>
-      <p>Charts will go here</p>
-    </section>
+    </div>
+    <div>
+      <span class="badge" id="totalBadge">Total: 0</span>
+      <span class="badge" id="allowedBadge">Allowed: 0</span>
+      <span class="badge" id="deniedBadge">Denied: 0</span>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <canvas id="timeline"></canvas>
+  </div>
+
+  <div class="small-chart-row">
+    <div class="chart-card small">
+      <div class="chart-title">Syscall Distribution</div>
+      <canvas id="pie"></canvas>
+    </div>
+    <div class="chart-card small">
+      <div class="chart-title">Syscall Frequency</div>
+      <canvas id="bar"></canvas>
+    </div>
+  </div>
+</section>
 
     <aside class="panel rightpanel">
   <div class="panel-title">Running Processes</div>
