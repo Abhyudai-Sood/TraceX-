@@ -611,6 +611,65 @@ function executeProcAction() {
   renderProcs();
   closeModal("procModal");
 }
+// ===== EXPORT / IMPORT / CLEAR =====
+function exportLogs() {
+  const data = { logs, vfs, procs, extraMem, alerts };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "tracex_export.json";
+  a.click();
+}
+
+function importLogs() {
+  const inp = document.createElement("input");
+  inp.type = "file";
+  inp.accept = ".json";
+  inp.onchange = () => {
+    const file = inp.files[0];
+    if (!file) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const obj = JSON.parse(r.result);
+        logs = obj.logs || [];
+        vfs = obj.vfs || {};
+        procs = obj.procs || [];
+        extraMem = parseInt(obj.extraMem || "0", 10);
+        alerts = obj.alerts || [];
+        saveState();
+        renderAll();
+        alert("Import successful");
+      } catch (e) {
+        alert("Invalid JSON file");
+      }
+    };
+    r.readAsText(file);
+  };
+  inp.click();
+}
+
+function clearAll() {
+  if (!confirm("Clear logs, files, processes and memory?")) return;
+  logs = [];
+  vfs = { "/home/readme.txt": "Welcome to TraceX demo system." };
+  procs = [{ pid: 1001, name: "init", runtime: 0, mem: 32 }];
+  extraMem = 0;
+  alerts = [];
+  nextPid = 1002;
+  saveState();
+  renderAll();
+}
+
+function renderAll() {
+  updateVfsUI();
+  renderProcs();
+  renderFeed();
+  renderAlerts();
+  renderStats();
+  renderMemory();
+  renderCharts();
+}
 
 // Login to initialize charts
 function login() {
