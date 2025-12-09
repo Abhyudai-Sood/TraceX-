@@ -70,3 +70,6 @@ body { margin:0; background:#071226; color:#e6f0fb; font-family:Arial; }
 .status-tag { padding:2px 8px; border-radius:4px; font-weight:600; font-size:10px; text-transform:uppercase; }
 .status-tag.allowed { background:rgba(16,185,129,0.2); color:#10b981; }
 .status-tag.denied { background:rgba(239,68,68,0.2); color:#ef4444; }
+/* memory */
+.mem-bar{width:100%;height:18px;background:rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.02)}
+#memBarFill{height:100%;width:0;background:linear-gradient(90deg,#10b981,#3b82f6,#8b5cf6);transition:width 500ms ease;box-shadow:0 0 10px rgba(59,130,246,0.3)}

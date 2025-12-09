@@ -228,6 +228,97 @@ function renderActivityFeed() {
     feed.appendChild(item);
   });
 }
+// Add to LocalStorage Keys (at top with other keys)
+const MEM_EXTRA_KEY = "tracex_mem_extra_v1";
+
+// Add to Global State (with other global variables)
+let extraMem = 0;
+
+// Update loadState function (add extraMem loading)
+function loadState() {
+  try { logs = JSON.parse(localStorage.getItem(LOG_KEY) || "[]"); } catch { logs = []; }
+  try { vfs = JSON.parse(localStorage.getItem(VFS_KEY) || "{}"); } catch { vfs = {}; }
+  try { procs = JSON.parse(localStorage.getItem(PROC_KEY) || "[]"); } catch { procs = []; }
+  try { extraMem = parseInt(localStorage.getItem(MEM_EXTRA_KEY) || "0", 10); } catch { extraMem = 0; }
+
+  if (!Object.keys(vfs).length) {
+    vfs = { "/home/readme.txt": "Welcome to TraceX demo system." };
+  }
+  if (!procs.length) {
+    procs = [{ pid: 1001, name: "init", runtime: 0, mem: 32 }];
+  }
+  nextPid = procs.length ? Math.max(...procs.map(p => p.pid)) + 1 : 2000;
+}
+
+// Update saveState function (add extraMem saving)
+function saveState() {
+  localStorage.setItem(LOG_KEY, JSON.stringify(logs));
+  localStorage.setItem(VFS_KEY, JSON.stringify(vfs));
+  localStorage.setItem(PROC_KEY, JSON.stringify(procs));
+  localStorage.setItem(MEM_EXTRA_KEY, String(extraMem));
+}
+
+// ===== MEMORY MANAGEMENT ===== (Add this entire section)
+function totalMemUsed() {
+  const fromProcs = procs.reduce((sum, p) => sum + (p.mem || 0), 0);
+  return fromProcs + extraMem;
+}
+
+function openMemoryModal() {
+  if (!session) { alert("Login first"); return; }
+  document.getElementById("memResource").value = "";
+  document.getElementById("memAmount").value = "";
+  document.getElementById("memoryModal").style.display = "flex";
+}
+
+function executeMemoryAlloc() {
+  if (!session) { alert("Login first"); return; }
+  const role = session.role;
+  const res = document.getElementById("memResource").value.trim() || "anonymous";
+  const amt = parseInt(document.getElementById("memAmount").value || "0", 10);
+  
+  if (!amt || amt <= 0) { alert("Enter valid MB amount"); return; }
+  
+  if (!PERMS[role].includes("memory_alloc")) {
+    logEvent({ user: session.user, role, action: "memory_alloc", target: res, detail: `${amt}MB`, decision: "denied" });
+    closeModal("memoryModal");
+    return;
+  }
+  
+  extraMem += amt;
+  logEvent({ user: session.user, role, action: "memory_alloc", target: res, detail: `${amt}MB`, decision: "allowed" });
+  document.getElementById("memInput").value = `${amt} MB`;
+  closeModal("memoryModal");
+  saveState();
+  renderMemory();
+}
+
+function freeMemory() {
+  extraMem = 0;
+  procs.forEach(p => { p.mem = 0; });
+  logEvent({ 
+    user: session ? session.user : "system", 
+    role: session ? session.role : "system", 
+    action: "memory_free", 
+    target: "all", 
+    decision: "allowed" 
+  });
+  saveState();
+  renderMemory();
+  renderProcs();
+  renderFeed();
+}
+
+function renderMemory() {
+  const used = totalMemUsed();
+  const cap = 512;
+  const pct = Math.min(100, Math.round((used / cap) * 100));
+  document.getElementById("memBarFill").style.width = pct + "%";
+  document.getElementById("memUsed").textContent = `Used: ${pct}%`;
+  document.getElementById("memInput").value = used ? `${used} MB` : "";
+}
+
+
 
 function formatAction(action) {
   const actionMap = {
@@ -394,13 +485,15 @@ function login() {
     session = { user: u, role: USERS[u].role };
     document.getElementById("loginScreen").style.display = "none";
     document.getElementById("dashboard").style.display = "block";
-    document.getElementById("sessionUser").textContent = u + " (" + session.role + ")";
+    document.getElementById("sessionUser").textContent = `${u} (${session.role})`;
+    document.getElementById("roleDisplay").textContent = session.role;
     updateVfsUI();
     renderProcs();
     renderStats();
+    renderFeed();
     renderCharts();
-    renderActivityFeed();
+    renderMemory();  // ADD THIS LINE
   } else {
-    alert("Invalid credentials");
+    alert("Invalid username or password");
   }
 }

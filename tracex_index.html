@@ -60,6 +60,7 @@
   <hr style="border:none;border-top:1px solid rgba(255,255,255,0.05);margin:12px 0">
 <button class="op-btn" onclick="openProcModal('create')">⚙️ Create Process</button>
 <button class="op-btn" onclick="openProcModal('kill')">❌ Kill Process</button>
+<button class="op-btn" onclick="openMemoryModal()">💾 Memory Alloc</button>
 
 <div style="margin-top:12px">
   <strong>Process Manager</strong>
@@ -84,6 +85,21 @@
       <span class="badge" id="deniedBadge">Denied: 0</span>
     </div>
   </div>
+  <!-- Memory Section -->
+<div class="panel" style="margin-top:12px">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <strong>Memory Allocation</strong>
+    <span id="memUsed" class="small">Used: 0%</span>
+  </div>
+  <div class="inline-row" style="margin-top:6px">
+    <input id="memInput" class="txt-small" placeholder="Last alloc (MB)" disabled>
+    <button class="btn-primary" onclick="openMemoryModal()">Allocate Memory</button>
+    <button class="btn-ghost" onclick="freeMemory()">Free Allocations</button>
+  </div>
+  <div class="mem-bar" style="margin-top:8px">
+    <div id="memBarFill"></div>
+  </div>
+</div>
 
   <div class="chart-card">
     <canvas id="timeline"></canvas>
@@ -155,6 +171,26 @@
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('procModal')">Cancel</button>
       <button class="btn-primary" onclick="executeProcAction()">Execute</button>
+    </div>
+  </div>
+</div>
+
+<!-- MEMORY MODAL -->
+<div id="memoryModal" class="modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Memory Allocation</h3>
+      <button class="btn-ghost" onclick="closeModal('memoryModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="small">Resource name (or purpose)</label>
+      <input id="memResource" class="txt-full" placeholder="e.g. cache_buffer">
+      <label class="small" style="margin-top:8px">Amount (MB)</label>
+      <input id="memAmount" class="txt-full" placeholder="e.g. 64" type="number" min="1">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('memoryModal')">Cancel</button>
+      <button class="btn-primary" onclick="executeMemoryAlloc()">Allocate</button>
     </div>
   </div>
 </div>
